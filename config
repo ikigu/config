@@ -5,19 +5,21 @@
 ARCH="$(arch)"
 
 # Install gcc and zsh
-sudo apt-get upgrade
-sudo apt-get -y install zsh gcc
+echo "About to run some sudo commands. You'll be requested for your password!"
+sleep 2
+sudo apt-get update
+sudo apt install -y install zsh gcc
 
 # Install homebrew and neovim for non-ARM processors
 if [ "$ARCH" != "arm64" ] && [ "$ARCH" != "aarch64" ]; then
-  sudo apt-get install homebrew && brew install neovim;
+  apt-get install homebrew && /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)";
 fi
 
 # Install Betty and Shellcheck
 mkdir linters
-git clone https://github.com/alx-tools/Betty.github ./linters #betty
+git clone https://github.com/alx-tools/Betty.git ./linters #betty
 ./linters/Betty/install.sh
-sudo apt install shellcheck #shellcheck
+apt install shellcheck #shellcheck
 
 # Install oh-my-posh
 curl -s https://ohmyposh.dev/install.sh | bash -s
