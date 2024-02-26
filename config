@@ -10,14 +10,15 @@ sudo apt install -y zsh gcc unzip
 
 # Install homebrew and neovim for non-ARM processors
 if [ "$ARCH" != "arm64" ] && [ "$ARCH" != "aarch64" ]; then
-  apt-get install homebrew && /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)";
+  /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)";
+  brew install neovim
 fi
 
 # Install Betty and Shellcheck
 mkdir linters
 git clone https://github.com/alx-tools/Betty.git ./linters #betty
 ./linters/Betty/install.sh
-apt install shellcheck #shellcheck
+sudo apt install shellcheck #shellcheck
 
 # Install oh-my-posh
 curl -s https://ohmyposh.dev/install.sh | bash -s
@@ -32,7 +33,7 @@ chsh -s "$(which zsh)"
 # Apply theme
 echo "" >> ~/.zshrc
 echo '# oh-my-posh theme' >> ~/.zshrc
-echo "eval \"$(oh-my-posh init zsh --config ~/jandedobbeleer.omp.json)\"" >> ~/.zshrc
+echo "eval \"$(oh-my-posh init zsh --config /root/.cache/oh-my-posh/themes/jandedobbeleer.omp.json)\"" >> ~/.zshrc
 
 # Run zsh
 exec zsh
