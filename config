@@ -5,10 +5,8 @@
 ARCH="$(arch)"
 
 # Install gcc and zsh
-echo "About to run some sudo commands. You'll be requested for your password!"
-sleep 2
 sudo apt-get update
-sudo apt install -y install zsh gcc
+sudo apt install -y zsh gcc unzip
 
 # Install homebrew and neovim for non-ARM processors
 if [ "$ARCH" != "arm64" ] && [ "$ARCH" != "aarch64" ]; then
