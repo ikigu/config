@@ -3,6 +3,15 @@
 
 # Determine CPU architecture
 ARCH="$(arch)"
+ACCESS_LEVEL="$(whoami)"
+
+# Exit if user is root
+echo "Checking for root access"
+
+if [ "$ACCESS_LEVEL" == "root" ]; then
+    echo "Don't run this script as Root!"
+    exit 1;
+fi
 
 # Install gcc and zsh
 sudo apt-get update
@@ -11,7 +20,10 @@ sudo apt install -y zsh gcc unzip
 # Install homebrew and neovim for non-ARM processors
 if [ "$ARCH" != "arm64" ] && [ "$ARCH" != "aarch64" ]; then
   /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)";
+  (echo; echo 'eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"') >> ~/.zshrc
+  eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
   brew install neovim
+  git clone https://github.com/NvChad/NvChad ~/.config/nvim --depth 1
 fi
 
 # Install Betty and Shellcheck
@@ -23,9 +35,6 @@ sudo apt install shellcheck #shellcheck
 # Install oh-my-posh
 curl -s https://ohmyposh.dev/install.sh | bash -s
 oh-my-posh font install
-
-# Install NVChad
-git clone https://github.com/NvChad/NvChad ~/.config/nvim --depth 1
 
 # Change default shell to zsh
 chsh -s "$(which zsh)"
