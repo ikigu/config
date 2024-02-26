@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+# This script configures a UNIX machine by installing common packages.
+
+# Determine CPU architecture
+ARCH="$(arch)"
+
+# Install gcc and zsh
+sudo apt-get upgrade
+sudo apt-get -y install zsh gcc
+
+# Install homebrew and neovim for non-ARM processors
+if [ "$ARCH" != "arm64" ] && [ "$ARCH" != "aarch64" ]; then
+  sudo apt-get install homebrew && brew install neovim;
+fi
+
+# Install Betty and Shellcheck
+mkdir linters
+git clone https://github.com/alx-tools/Betty.github ./linters #betty
+./linters/Betty/install.sh
+sudo apt install shellcheck #shellcheck
+
+# Install oh-my-posh
+curl -s https://ohmyposh.dev/install.sh | bash -s
+oh-my-posh font install
+
+# Install NVChad
+git clone https://github.com/NvChad/NvChad ~/.config/nvim --depth 1
+
+# Change default shell to zsh
+chsh -s "$(which zsh)"
+
+# Apply theme
+echo "" >> ~/.zshrc
+echo '# oh-my-posh theme' >> ~/.zshrc
+echo "eval \"$(oh-my-posh init zsh --config ~/jandedobbeleer.omp.json)\"" >> ~/.zshrc
+
+# Run zsh
+exec zsh
