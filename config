@@ -1,46 +1,70 @@
 #!/usr/bin/env bash
 # This script configures a UNIX machine by installing common packages.
 
-# Determine CPU architecture
-ARCH="$(arch)"
-ACCESS_LEVEL="$(whoami)"
+ARCH="$(arch)"              # CPU architecture
+ACCESS_LEVEL="$(whoami)"    # Root access?
 
 # Exit if user is root
-echo "Checking for root access"
-
 if [ "$ACCESS_LEVEL" == "root" ]; then
-    echo "Don't run this script as Root!"
+    echo "You can't run this script as the root user!"
     exit 1;
 fi
 
-# Install gcc and zsh
-sudo apt-get update
-sudo apt install -y zsh gcc unzip
+# Install packages
+sudo apt-get update | sudo tee -a ~/.tmp-config
+sudo apt install -y \
+    zsh \
+    gcc \
+    unzip \
+    node \
+    python3 \
+    pip \
+    | sudo tee -a ~/.tmp-config
 
-# Install homebrew and neovim for non-ARM processors
+# Install homebrew, neovim and nvchad for non-ARM processors
 if [ "$ARCH" != "arm64" ] && [ "$ARCH" != "aarch64" ]; then
-  /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)";
-  (echo; echo 'eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"') >> ~/.zshrc
-  eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
-  brew install neovim
-  git clone https://github.com/NvChad/NvChad ~/.config/nvim --depth 1
+  # 1. Install Homebrew
+  /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)" >> ~/.tmp-config
+
+  # 2. Add brew to PATH for Linux machines
+  if [ "$(cat /etc/os-release)" ]; then
+      (echo; echo \'eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"\') >> ~/.zshrc
+      eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)";
+
+      # 3. Install neovim
+      brew install neovim >> ~/.tmp-config
+      
+      # 4. Install NvChad
+      sudo rm -rf ~/config/nvim
+      git clone https://github.com/NvChad/NvChad ~/.config/nvim | sudo tee -a ~/.tmp-config
+
+  else
+    sleep 2
+    printf "\n\nYou'll need to manually add brew to path!\n\n"
+
+  fi
 fi
 
-# Install Betty and Shellcheck
+# Install Betty, Shellcheck and Pycodestyle
 mkdir linters
-git clone https://github.com/alx-tools/Betty.git ./linters #betty
-./linters/Betty/install.sh
-sudo apt install shellcheck #shellcheck
+
+echo "Installing Betty..."
+git clone https://github.com/alx-tools/Betty.git ./linters  >> ~/.tmp-config  # Clone Betty GitHub repo
+./linters/Betty/install.sh >> ~/.tmp-config                                   # Run Betty installation script
+echo "Installing Shellcheck..."
+sudo apt install Shellcheck | sudo tee -a ~/.tmp-config                       # Install Shellcheck
+echo "Installing Pycodestyle..."
+pip install pycodestyle >> ~/.tmp-config                                      # Install pycodestyle
 
 # Install oh-my-posh
-curl -s https://ohmyposh.dev/install.sh | bash -s
-oh-my-posh font install
+echo "Installing oh-my-posh"
+sudo curl -s https://ohmyposh.dev/install.sh | bash -s >> ~/.tmp-config
 
 # Change default shell to zsh
 chsh -s "$(which zsh)"
 
 # Apply theme
-echo "" >> ~/.zshrc
+echo >> ~/.zshrc
 echo '# oh-my-posh theme' >> ~/.zshrc
 echo "eval \"$(oh-my-posh init zsh --config /root/.cache/oh-my-posh/themes/jandedobbeleer.omp.json)\"" >> ~/.zshrc
 
